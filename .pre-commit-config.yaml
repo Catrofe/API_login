@@ -32,23 +32,9 @@ repos:
         types: [python]
         language: system
 
-      - id: mypy
-        name: Typecheck with mypy
-        entry: poetry run mypy 
-        pass_filenames: false
-        types: [python]
-        language: system
-
-      - id: pytest-commit
-        name: Run tests with pytest
-        entry: poetry run pytest --random-order --cov=truck_manager --cov-report=term
-        pass_filenames: false
-        stages: [commit]
-        language: system
-
-      - id: pytest-push
-        name: Run tests with pytest
-        entry: poetry run pytest --random-order --cov=truck_manager --cov-report=term --cov-fail-under=50
-        pass_filenames: false
-        stages: [push]
-        language: system
+      # - id: mypy
+      #   name: Typecheck with mypy
+      #   entry: poetry run mypy
+      #   pass_filenames: false
+      #   types: [python]
+      #   language: system
