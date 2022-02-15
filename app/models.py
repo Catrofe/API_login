@@ -3,10 +3,10 @@ from pydantic import BaseModel
 
 class UserRegister(BaseModel):
     email: str
-    nome: str
-    senha: str
+    name: str
+    password: str
 
 
-class UserLogin(UserRegister):
-    nome: str
-    senha: str
+class UserLogin(BaseModel):
+    name: str
+    password: str
