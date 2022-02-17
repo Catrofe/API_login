@@ -17,8 +17,5 @@ class User(Base):
     logged = Column(Boolean, nullable=False, default=False)
 
 
-def create_tables():
+def create_tables() -> None:
     Base.metadata.create_all(engine)
-
-
-create_tables()

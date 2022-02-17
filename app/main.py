@@ -1,4 +1,6 @@
-from fastapi import FastAPI
+from typing import Dict, Optional
+
+from fastapi import FastAPI, HTTPException
 from models import UserRegister
 from user import UserRepository
 
@@ -7,9 +9,10 @@ db_user = UserRepository()
 
 
 @app.post("/register", status_code=201)
-def register_user(user: UserRegister):
-    create = db_user.creating_object(user.dict())
-    if create:
-        return f"New user registered, ID: {create}"
-    if not create:
-        return "Error, new user not registered"
+def register_user(user: UserRegister) -> Optional[Dict[str, str]]:
+    id, comment, status_code = db_user.add(user.dict())
+
+    if id:
+        return {"New user registered, ID:": str(id)}
+    else:
+        raise HTTPException(status_code, comment)
