@@ -1,19 +1,24 @@
-from peewee import BitField, CharField, Model
-from playhouse.postgres_ext import PostgresqlExtDatabase
+from sqlalchemy import Boolean, Column, Integer, String, create_engine
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
 
-db = PostgresqlExtDatabase(
-    "postgres", user="postgres", password="root", port="5432", host="localhost"
-)
-
-
-class User(Model):
-    email = CharField(null=False, unique=True)
-    name = CharField(null=False, max_length=255)
-    password = CharField(null=False, max_length=65)
-    Logged = BitField(null=False, default=0)
-
-    class Meta:
-        database = db
+engine = create_engine("postgresql+psycopg2://postgres:root@localhost:5432/login_api")
+Session = sessionmaker(bind=engine)
+session = Session()
+Base = declarative_base()
 
 
-db.create_tables([User])
+class User(Base):
+    __tablename__ = "user"
+    id = Column(Integer, primary_key=True)
+    name = Column(String, nullable=False)
+    email = Column(String, unique=True, nullable=False)
+    password = Column(String, nullable=False)
+    logged = Column(Boolean, nullable=False, default=False)
+
+
+def create_tables():
+    Base.metadata.create_all(engine)
+
+
+create_tables()

@@ -31,9 +31,9 @@ repos:
         types: [python]
         language: system
 
-      # - id: mypy
-      #   name: Typecheck with mypy
-      #   entry: poetry run mypy
-      #   pass_filenames: false
-      #   types: [python]
-      #   language: system
+      - id: mypy
+        name: Typecheck with mypy
+        entry: poetry run mypy app
+        pass_filenames: false
+        types: [python]
+        language: system

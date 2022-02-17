@@ -1,34 +1,15 @@
 from fastapi import FastAPI
-from models import UserLogin, UserRegister
-from user import UserManager
+from models import UserRegister
+from user import UserRepository
 
 app = FastAPI(debug=True)
-db_user = UserManager()
+db_user = UserRepository()
 
 
-@app.post("/login", status_code=201)
+@app.post("/register", status_code=201)
 def register_user(user: UserRegister):
-    create = db_user.creating_object(dict(user))
-    print(create)
+    create = db_user.creating_object(user.dict())
     if create:
-        return "New user registered"
-
-
-@app.put("/login")
-def login(user: UserLogin):
-    raise NotImplementedError
-
-
-@app.put("/login{codigo}")
-def validation(codigo):
-    raise NotImplementedError
-
-
-@app.put("/logout")
-def logout():
-    raise NotImplementedError
-
-
-@app.get("/login")
-def search_users_logged():
-    raise NotImplementedError
+        return f"New user registered, ID: {create}"
+    if not create:
+        return "Error, new user not registered"

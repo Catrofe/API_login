@@ -1,18 +1,30 @@
 import re
 
 import bcrypt
-from database import User
+from database import User, session
 from models import UserRegister
 
 
-class UserManager:
-    def creating_object(self, user: UserRegister) -> None:
+class UserRepository:
+    def add(self, user: UserRegister) -> None:
         self.email = user["email"]
         self.password = user["password"]
         self.name = user["name"]
 
-        create = self.manager()
-        return create
+        email_verify = self.validate_email()
+        password_verify = self.validate_password()
+        name_verify = self.validate_name()
+        password = self.encrypt_password(self.password)
+
+        if email_verify and password_verify and name_verify:
+            data_add = User(
+                name=self.name, email=self.email, password=password, logged=False
+            )
+            session.add(data_add)
+            session.commit()
+            return data_add.id
+        else:
+            return False
 
     def validate_email(self) -> bool:
         return bool(
@@ -28,26 +40,16 @@ class UserManager:
     def validate_password(self) -> bool:
         if len(self.password) >= 8 and len(self.password) <= 255:
             if (
-                bool(re.search(r"[a-z]", self.password)) and 
-                bool(re.search(r"[A-Z]", self.password)) and 
-                bool(re.search(r"[1-9]", self.password))
+                bool(re.search(r"[a-z]", self.password))
+                and bool(re.search(r"[A-Z]", self.password))
+                and bool(re.search(r"[1-9]", self.password))
             ):
                 return True
 
         return False
 
-    def encrypt_password(self, password) -> str:
-        password = bcrypt.hashpw(password.encode("utf8"), bcrypt.gensalt(8)).decode()
-        return password
-
-    def manager(self) -> bool:
-        email_verify = self.validate_email()
-        password_verify = self.validate_password()
-        name_verify = self.validate_name()
-        password = self.encrypt_password(self.password)
-
-        if email_verify and password_verify and name_verify:
-            User.create(email=self.email, name=self.name, password=password)
-            return True
-        else:
-            return False
+    def encrypt_password(self, raw_password) -> str:
+        crypt_password = bcrypt.hashpw(
+            raw_password.encode("utf8"), bcrypt.gensalt(8)
+        ).decode()
+        return crypt_password
