@@ -1,6 +1,6 @@
 import re
 
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, PositiveInt, validator
 
 _email_field = Field(
     min_length=3,
@@ -40,5 +40,5 @@ class UserLogin(BaseModel):
 
 
 class UserOutput(BaseModel):
-    id: int
+    id: PositiveInt
     email: str = _email_field
