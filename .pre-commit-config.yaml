@@ -37,3 +37,10 @@ repos:
         pass_filenames: false
         types: [python]
         language: system
+
+      - id: pytest
+        name: Run tests with pytest
+        entry: poetry run pytest
+        pass_filenames: false
+        language: system
+        types: [python]

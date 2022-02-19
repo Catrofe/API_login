@@ -4,7 +4,7 @@ from sqlalchemy_utils import database_exists, drop_database
 
 from app.database import User, build_engine, build_session_maker, setup_db
 from app.models import UserRegister
-from app.user import add
+from app.user import AddSuccess, add
 
 
 @pytest.fixture
@@ -25,11 +25,14 @@ def test_add_happy_path(engine: Engine):
     session_maker = build_session_maker(engine)
 
     with session_maker() as session:
-        users = session.query(User).count()
-        print(users)
+        n_users = session.query(User).count()
+        assert n_users == 0
 
     response = add(user, session_maker)
+    assert isinstance(response, AddSuccess)
+    assert isinstance(response.id, int)
+    assert response.email == user.email
 
-    assert response[0] > 0
-    assert response[1] == "Success"
-    assert response[2] == 201
+    with session_maker() as session:
+        n_users = session.query(User).count()
+        assert n_users == 1
