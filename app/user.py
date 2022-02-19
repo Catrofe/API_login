@@ -8,7 +8,6 @@ from app.database import User, create_tables, session
 
 
 def add(user: Dict[str, str]) -> Tuple[int, str, int]:
-
     try:
         session.query(User).all()
     except ProgrammingError:
