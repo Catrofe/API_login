@@ -38,9 +38,18 @@ repos:
         types: [python]
         language: system
 
-      - id: pytest
+      - id: pytest-commit
         name: Run tests with pytest
         entry: poetry run pytest
         pass_filenames: false
         language: system
         types: [python]
+        stages: [commit]
+
+      - id: pytest-push
+        name: Run tests with pytest
+        entry: poetry run pytest --cov-fail-under=70
+        pass_filenames: false
+        language: system
+        types: [python]
+        stages: [push]
