@@ -1,37 +1,35 @@
 import re
-from typing import Dict, Tuple
+from typing import Tuple
 
 import bcrypt
-from sqlalchemy.exc import ProgrammingError
+from sqlalchemy.orm import sessionmaker
 
-from app.database import User, create_tables, session
+from app.database import User
+from app.models import UserRegister
 
 
-def add(user: Dict[str, str]) -> Tuple[int, str, int]:
-    try:
-        session.query(User).all()
-    except ProgrammingError:
-        create_tables()
-
-    if verify_email_already_exists(user["email"]):
+def add(user: UserRegister, session_maker: sessionmaker) -> Tuple[int, str, int]:
+    if verify_email_already_exists(user.email, session_maker):
         return 0, "Email already exists", 409
 
-    password_verify = validate_password(user["password"])
+    password_verify = validate_password(user.password)
     if not password_verify:
         return 0, "Password Invalid", 400
 
-    if password_verify:
-        password = encrypt_password(user["password"])
-        user_add = User(name=user["name"], email=user["email"], password=password)
-        session.add(user_add)
-        session.commit()
-        return user_add.id, "Sucess", 201
+    password = encrypt_password(user.password)
+    try:
+        user_add = User(name=user.name, email=user.email, password=password)
+        with session_maker() as session:
+            session.add(user_add)
+            session.commit()
+            return user_add.id, "Success", 201
+    except Exception:
+        return 0, "Error", 500
 
-    return 0, "Error", 500
 
-
-def verify_email_already_exists(email_user: str) -> bool:
-    return bool(session.query(User.email).filter_by(email=email_user).count())
+def verify_email_already_exists(email_user: str, session_maker: sessionmaker) -> bool:
+    with session_maker() as session:
+        return bool(session.query(User.email).filter_by(email=email_user).count())
 
 
 def encrypt_password(raw_password: str) -> str:
