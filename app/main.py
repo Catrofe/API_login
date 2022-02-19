@@ -1,13 +1,12 @@
 from dataclasses import dataclass
-from typing import Dict, Optional
 
 from fastapi import FastAPI, HTTPException
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import sessionmaker
 
 from app.database import build_engine, build_session_maker, setup_db
-from app.models import UserRegister
-from app.user import add
+from app.models import UserOutput, UserRegister
+from app.user import AddSuccess, add
 
 app = FastAPI(debug=True)
 
@@ -27,11 +26,17 @@ def startup_event() -> None:
     setup_db(context.engine)
 
 
-@app.post("/register", status_code=201, response_model=UserRegister)
-def register_user(user: UserRegister) -> Optional[Dict[str, str]]:
-    id, comment, status_code = add(user, context.session_maker)
+@app.post("/register", status_code=201, response_model=UserOutput)
+def register_user(user: UserRegister) -> UserOutput:
+    response = add(user, context.session_maker)
 
-    if id:
-        return {"New user registered, ID:": str(id)}
-    else:
-        raise HTTPException(status_code, comment)
+    if isinstance(response, AddSuccess):
+        return UserOutput(id=response.id, email=response.email)
+
+    if response.reason == "BAD_REQUEST":
+        raise HTTPException(400, response.message)
+
+    if response.reason == "CONFLICT":
+        raise HTTPException(409, response.message)
+
+    raise HTTPException(500, response.message)

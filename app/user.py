@@ -1,5 +1,6 @@
 import re
-from typing import Tuple
+from dataclasses import dataclass
+from typing import Literal
 
 import bcrypt
 from sqlalchemy.orm import sessionmaker
@@ -8,13 +9,24 @@ from app.database import User
 from app.models import UserRegister
 
 
-def add(user: UserRegister, session_maker: sessionmaker) -> Tuple[int, str, int]:
-    if verify_email_already_exists(user.email, session_maker):
-        return 0, "Email already exists", 409
+@dataclass
+class AddSuccess:
+    id: int
+    email: str
 
-    password_verify = validate_password(user.password)
-    if not password_verify:
-        return 0, "Password Invalid", 400
+
+@dataclass
+class AddError:
+    reason: Literal["BAD_REQUEST", "CONFLICT", "UNKNOWN"]
+    message: str
+
+
+def add(user: UserRegister, session_maker: sessionmaker) -> AddSuccess | AddError:
+    if verify_email_already_exists(user.email, session_maker):
+        return AddError(reason="CONFLICT", message="Email already exists")
+
+    if not validate_password(user.password):
+        return AddError(reason="BAD_REQUEST", message="Invalid password")
 
     password = encrypt_password(user.password)
     try:
@@ -22,9 +34,9 @@ def add(user: UserRegister, session_maker: sessionmaker) -> Tuple[int, str, int]
         with session_maker() as session:
             session.add(user_add)
             session.commit()
-            return user_add.id, "Success", 201
-    except Exception:
-        return 0, "Error", 500
+            return AddSuccess(id=user_add.id, email=user_add.email)
+    except Exception as exc:
+        return AddError(reason="UNKNOWN", message=repr(exc))
 
 
 def verify_email_already_exists(email_user: str, session_maker: sessionmaker) -> bool:
