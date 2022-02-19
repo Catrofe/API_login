@@ -2,7 +2,11 @@ import re
 
 from pydantic import BaseModel, Field, validator
 
-_email_field = Field(regex=r"[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+")
+_email_field = Field(
+    min_length=3,
+    max_length=255,
+    regex=r"[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+",
+)
 _name_field = Field(min_length=3, max_length=255)
 
 
