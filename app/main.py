@@ -33,9 +33,6 @@ def register_user(user: UserRegister) -> UserOutput:
     if isinstance(response, AddSuccess):
         return UserOutput(id=response.id, email=response.email)
 
-    if response.reason == "BAD_REQUEST":
-        raise HTTPException(400, response.message)
-
     if response.reason == "CONFLICT":
         raise HTTPException(409, response.message)
 
