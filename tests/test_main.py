@@ -1,5 +1,3 @@
-import logging
-
 from fastapi.testclient import TestClient
 from sqlalchemy_utils import database_exists, drop_database
 
@@ -7,15 +5,13 @@ from app.main import app, register_user, startup_event
 from app.user import UserRegister
 
 
-def drop():
+def drop_db():
     url = "sqlite:///db.sqlite3"
     if database_exists(url):
         drop_database(url)
-    else:
-        drop_database(url)
 
 
-def test_register_user_should_add_success():
+def test_register_valid_user():
     startup_event()
     client = TestClient(app)
     response = client.post(
@@ -26,10 +22,10 @@ def test_register_user_should_add_success():
     assert response.status_code == 201
     assert response.json() == {"email": "test@test.com", "id": 1}
 
-    drop()
+    drop_db()
 
 
-def test_register_user_should_code_409():
+def test_register_email_duplicate():
     client = TestClient(app)
     startup_event()
 
@@ -44,9 +40,7 @@ def test_register_user_should_code_409():
         json={"email": "test@test.com", "name": "test_user", "password": "Ma123456"},
     )
 
-    logging.critical(response)
-
     assert response.status_code == 409
     assert response.json() == {"detail": "Email already exists"}
 
-    drop()
+    drop_db()

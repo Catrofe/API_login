@@ -48,7 +48,7 @@ repos:
 
       - id: pytest-push
         name: Run tests with pytest
-        entry: poetry run pytest --cov-fail-under=70
+        entry: poetry run pytest --cov-fail-under=70 --random-order
         pass_filenames: false
         language: system
         types: [python]

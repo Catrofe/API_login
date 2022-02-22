@@ -4,7 +4,7 @@ from pydantic import ValidationError
 from app.models import UserRegister
 
 
-def test_validate_correct_password_should_return_true() -> None:
+def should_return_true() -> None:
     # It should not raise an exception.
     UserRegister(email="test@test.com", name="test", password="Test1234")
 

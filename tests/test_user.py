@@ -20,7 +20,7 @@ def engine() -> Engine:
     drop_database(url)
 
 
-def test_add_happy_path(engine: Engine):
+def test_should_add_user(engine: Engine):
     user = UserRegister(email="test@test.com", name="test_user", password="Ma123456")
     session_maker = build_session_maker(engine)
 
