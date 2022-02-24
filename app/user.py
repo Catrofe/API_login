@@ -74,25 +74,29 @@ def update_login(user: UserLogin, session_maker: sessionmaker) -> AddSuccess | A
 
 
 def update_logout(id: int, session_maker: sessionmaker) -> AddSuccess | AddError:
-    with session_maker() as session:
-        user_db = session.query(
-            User.id, User.email, User.password, User.logged
-        ).filter_by(id=id)
-
-    if not user_db[0][3]:
-        return AddError(reason="BAD_REQUEST", message="User not logged")
-
-    if not user_db.count():
-        return AddError(reason="UNKNOWN", message="User not exists")
-
-    if user_db[0][3] == id:
+    try:
         with session_maker() as session:
-            stmt = update(User).values(logged=0).where(User.id == id)
+            user_db = session.query(
+                User.id, User.email, User.password, User.logged
+            ).filter_by(id=id)
 
-            session.execute(stmt)
-            session.commit()
+        if not user_db[0][3]:
+            return AddError(reason="BAD_REQUEST", message="User not logged")
 
-        return AddSuccess(id=id, email=user_db[0][1])
+        if not user_db.count():
+            return AddError(reason="UNKNOWN", message="User not exists")
+
+        if user_db[0][3] == id:
+            with session_maker() as session:
+                stmt = update(User).values(logged=0).where(User.id == id)
+
+                session.execute(stmt)
+                session.commit()
+
+            return AddSuccess(id=id, email=user_db[0][1])
+    
+    except IndexError:
+        return AddError(reason="UNKNOWN", message="User not found")
 
 
 def return_user_logged(id: int, session_maker: sessionmaker) -> Logged | AddError:
