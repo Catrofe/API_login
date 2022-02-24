@@ -1,4 +1,5 @@
 import re
+from typing import Any
 
 from pydantic import BaseModel, Field, PositiveInt, validator
 
@@ -36,7 +37,7 @@ class UserRegister(BaseModel):
 
 class UserLogin(BaseModel):
     email: str = _email_field
-    password: str
+    password: Any
 
 
 class UserOutput(BaseModel):
