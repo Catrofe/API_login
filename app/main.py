@@ -5,9 +5,10 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.orm import sessionmaker
 
 from app.database import build_engine, build_session_maker, setup_db
-from app.models import UserLogin, UserOutput, UserRegister
-from app.user import (AddError, AddSuccess, Logged, add, return_user_logged,
-                      update_login, update_logout)
+from app.models import (GetLoggedOutput, LoggedOutput, UserLogin, UserOutput,
+                        UserRegister)
+from app.user import (AddSuccess, AlterStatusLogin, Error, Logged, add,
+                      return_user_logged, update_login, update_logout)
 
 app = FastAPI(debug=True)
 
@@ -41,43 +42,42 @@ def register_user(user: UserRegister) -> UserOutput:
     raise HTTPException(500, response.message)
 
 
-@app.patch("/login", status_code=200, response_model=UserOutput)
-def login_user(user: UserLogin) -> UserOutput:
+@app.patch("/login", response_model=LoggedOutput)
+def login_user(user: UserLogin) -> LoggedOutput:
     response = update_login(user, context.session_maker)
 
-    if isinstance(response, AddSuccess):
-        return UserOutput(id=response.id, email=response.email)
-
-    if response.reason == "UNKNOWN":
-        raise HTTPException(400, response.message)
+    if isinstance(response, AlterStatusLogin):
+        return LoggedOutput(email=response.email, status=response.status)
 
     if response.reason == "BAD_REQUEST":
         raise HTTPException(400, response.message)
 
+    raise HTTPException(500, response.message)
 
-@app.patch("/logout/{id}", status_code=200, response_model=UserOutput)
-def logout_user(id: int) -> UserOutput:
+
+@app.patch("/logout/{id}", response_model=LoggedOutput)
+def logout_user(id: int) -> LoggedOutput:
     response = update_logout(id, context.session_maker)
 
-    if isinstance(response, AddSuccess):
-        return UserOutput(id=response.id, email=response.email)
-
-    if response.reason == "UNKNOWN":
-        raise HTTPException(400, response.message)
+    if isinstance(response, AlterStatusLogin):
+        return LoggedOutput(email=response.email, status=response.status)
 
     if response.reason == "BAD_REQUEST":
         raise HTTPException(400, response.message)
 
+    raise HTTPException(500, response.message)
 
-@app.get("/logged/{id}", status_code=200, response_model=Logged)
-def get_user_logged(id: int) -> Logged:
-    response = return_user_logged(id, context.session_maker)
 
-    if isinstance(response, AddError):
+@app.get("/logged/{id_user}", response_model=GetLoggedOutput)
+def is_user_logged(id_user: int) -> GetLoggedOutput:
+    response = return_user_logged(id_user, context.session_maker)
+
+    if isinstance(response, Logged):
+        return GetLoggedOutput(
+            id=response.id, email=response.email, status=response.status
+        )
+
+    if isinstance(response, Error):
         raise HTTPException(400, response.message)
 
-    if response.status == "User logged":
-        return Logged(id=response.id, email=response.email, status=response.status)
-
-    if response.status == "User not logged":
-        return Logged(id=response.id, email=response.email, status=response.status)
+    raise HTTPException(500, response.message)

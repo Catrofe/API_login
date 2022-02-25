@@ -1,14 +1,16 @@
 import re
-from typing import Any
+from typing import Literal
 
 from pydantic import BaseModel, Field, PositiveInt, validator
 
 _email_field = Field(
-    min_length=3,
+    min_length=7,
     max_length=255,
     regex=r"[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+",
 )
 _name_field = Field(min_length=3, max_length=255)
+
+_field_ddos = Field(max_length=255)
 
 
 class UserRegister(BaseModel):
@@ -36,10 +38,21 @@ class UserRegister(BaseModel):
 
 
 class UserLogin(BaseModel):
-    email: str = _email_field
-    password: Any
+    email: str = _field_ddos
+    password: str = _field_ddos
 
 
 class UserOutput(BaseModel):
     id: PositiveInt
-    email: str = _email_field
+    email: str
+
+
+class LoggedOutput(BaseModel):
+    email: str
+    status: Literal["LOGIN_SUCCESSFUL", "LOGOUT_SUCCESSFUL"]
+
+
+class GetLoggedOutput(BaseModel):
+    id: PositiveInt
+    email: str
+    status: Literal["USER_LOGGED", "USER_NOT_LOGGED"]
