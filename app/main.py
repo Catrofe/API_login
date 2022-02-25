@@ -5,10 +5,23 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.orm import sessionmaker
 
 from app.database import build_engine, build_session_maker, setup_db
-from app.models import (GetLoggedOutput, LoggedOutput, UserLogin, UserOutput,
-                        UserRegister)
-from app.user import (AddSuccess, AlterStatusLogin, Error, Logged, add,
-                      return_user_logged, update_login, update_logout)
+from app.models import (
+    GetLoggedOutput,
+    LoggedOutput,
+    UserLogin,
+    UserOutput,
+    UserRegister,
+)
+from app.user import (
+    AddSuccess,
+    AlterStatusLogin,
+    Error,
+    Logged,
+    add,
+    return_user_logged,
+    update_login,
+    update_logout,
+)
 
 app = FastAPI(debug=True)
 
