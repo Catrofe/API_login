@@ -6,7 +6,6 @@ repos:
       - id: check-yaml
       - id: detect-private-key
       - id: end-of-file-fixer
-      - id: pretty-format-json
       - id: trailing-whitespace
 
   - repo: local
@@ -19,6 +18,7 @@ repos:
         language: system
 
       - id: isort
+        args: ["--profile", "black"]
         name: Sort imports with isort
         entry: poetry run isort
         pass_filenames: true
@@ -34,21 +34,23 @@ repos:
 
       - id: mypy
         name: Typecheck with mypy
-        entry: poetry run mypy 
+        entry: poetry run mypy app
         pass_filenames: false
         types: [python]
         language: system
 
       - id: pytest-commit
         name: Run tests with pytest
-        entry: poetry run pytest --random-order --cov=truck_manager --cov-report=term
+        entry: poetry run pytest
         pass_filenames: false
-        stages: [commit]
         language: system
+        types: [python]
+        stages: [commit]
 
       - id: pytest-push
         name: Run tests with pytest
-        entry: poetry run pytest --random-order --cov=truck_manager --cov-report=term --cov-fail-under=50
+        entry: poetry run pytest --cov-fail-under=70 --random-order
         pass_filenames: false
-        stages: [push]
         language: system
+        types: [python]
+        stages: [push]
