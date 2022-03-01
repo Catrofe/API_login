@@ -23,7 +23,7 @@ from app.user import (
     update_logout,
 )
 
-app = FastAPI(debug=True)
+app = FastAPI()
 
 
 @dataclass
@@ -32,8 +32,7 @@ class ServerContext:
     session_maker: sessionmaker
 
 
-# "postgresql+psycopg2://postgres:root@localhost:5432/login_api"
-engine = build_engine("sqlite:///db.sqlite3")
+engine = build_engine("postgresql+psycopg2://root:root@DBpostgres:5432/DBpostgres")
 context = ServerContext(engine=engine, session_maker=build_session_maker(engine))
 
 
