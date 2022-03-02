@@ -21,9 +21,28 @@ I think it's a great choice overall, even though I'm not able to render HTML.
 To run the application just use the following command in terminal.
 
 ```bash
-.\run.sh
+docker-compose up
 ```
 
 After that, just use the routes already established to register, log in, log out and so on.
 
 ### Routes
+
+0.0.0.0:8000/register
+0.0.0.0:8000/login
+0.0.0.0:8000/logout/{id}
+0.0.0.0:8000/logged/{id}
+
+### Testing and development
+
+
+If you want to create new features, routes and etc, just clone the repository. To run the tests, change the following variable:
+
+![image](https://user-images.githubusercontent.com/82066310/156360456-ed740c00-4948-4c4f-813d-c2816a51749e.png)
+
+Change to:
+
+```bash
+engine = build_engine("sqlite:///db.sqlite3")
+```
+
