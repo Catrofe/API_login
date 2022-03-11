@@ -15,8 +15,8 @@ from app.models import (
 from app.user import (
     AddSuccess,
     AlterStatusLogin,
-    Error,
     Logged,
+    UserLoggedError,
     add,
     return_user_logged,
     update_login,
@@ -89,7 +89,7 @@ def is_user_logged(id_user: int) -> GetLoggedOutput:
             id=response.id, email=response.email, status=response.status
         )
 
-    if isinstance(response, Error):
+    if isinstance(response, UserLoggedError):
         raise HTTPException(400, response.message)
 
     raise HTTPException(500, response.message)
