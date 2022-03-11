@@ -10,7 +10,7 @@ _email_field = Field(
 )
 _name_field = Field(min_length=3, max_length=255)
 
-_length_constraint = Field(max_length=255) #Max lenght for avoid ddos ​​attacks
+_length_constraint = Field(max_length=255) #Max length for avoid ddos ​​attacks
 
 
 class UserRegister(BaseModel):
