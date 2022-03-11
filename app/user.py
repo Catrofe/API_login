@@ -16,8 +16,32 @@ class AddSuccess:
 
 
 @dataclass
+class AddError:
+    reason: Literal["CONFLICT", "UNKNOWN"]
+    message: str
+
+
+@dataclass
 class Error:
     reason: Literal["BAD_REQUEST", "CONFLICT", "UNKNOWN", "NOT_FOUND"]
+    message: str
+
+
+@dataclass
+class UpdateLoginError:
+    reason: Literal["NOT_FOUND", "BAD_REQUEST"]
+    message: str
+
+
+@dataclass
+class UpdateLogoutError:
+    reason: Literal["NOT_FOUND", "UNKNOWN", "BAD_REQUEST"]
+    message: str
+
+
+@dataclass
+class UserLoggedError:
+    reason: Literal["NOT_FOUND", "BAD_REQUEST"]
     message: str
 
 
@@ -34,9 +58,9 @@ class AlterStatusLogin:
     status: Literal["LOGIN_SUCCESSFUL", "LOGOUT_SUCCESSFUL"]
 
 
-def add(user: UserRegister, session_maker: sessionmaker) -> AddSuccess | Error:
+def add(user: UserRegister, session_maker: sessionmaker) -> AddSuccess | AddError:
     if verify_email_already_exists(user.email, session_maker):
-        return Error(reason="CONFLICT", message="EMAIL_ALREADY_EXISTS")
+        return AddError(reason="CONFLICT", message="EMAIL_ALREADY_EXISTS")
 
     try:
         user_add = User(
@@ -49,12 +73,12 @@ def add(user: UserRegister, session_maker: sessionmaker) -> AddSuccess | Error:
             return AddSuccess(id=user_add.id, email=user_add.email)
 
     except Exception as exc:
-        return Error(reason="UNKNOWN", message=repr(exc))
+        return AddError(reason="UNKNOWN", message=repr(exc))
 
 
 def update_login(
     user: UserLogin, session_maker: sessionmaker
-) -> AlterStatusLogin | Error:
+) -> AlterStatusLogin | UpdateLoginError:
     with session_maker() as session:
         user_db = (
             session.query(User.id, User.email, User.password)
@@ -63,7 +87,7 @@ def update_login(
         )
 
     if user_db is None:
-        return Error(reason="NOT_FOUND", message="USER_NOT_FOUND")
+        return UpdateLoginError(reason="NOT_FOUND", message="USER_NOT_FOUND")
 
     if user_db.email == user.email:
         password_input_encrypt = user.password.encode("utf8")
@@ -78,10 +102,12 @@ def update_login(
 
         return AlterStatusLogin(email=user_db.email, status="LOGIN_SUCCESSFUL")
 
-    return Error(reason="BAD_REQUEST", message="EMAIL_OR_PASSWORD_INVALID")
+    return UpdateLoginError(reason="BAD_REQUEST", message="EMAIL_OR_PASSWORD_INVALID")
 
 
-def update_logout(id: int, session_maker: sessionmaker) -> Error | AlterStatusLogin:
+def update_logout(
+    id: int, session_maker: sessionmaker
+) -> UpdateLogoutError | AlterStatusLogin:
     with session_maker() as session:
         user_db = (
             session.query(User.id, User.email, User.logged)
@@ -90,10 +116,10 @@ def update_logout(id: int, session_maker: sessionmaker) -> Error | AlterStatusLo
         )
 
     if user_db is None:
-        return Error(reason="NOT_FOUND", message="USER_NOT_FOUND")
+        return UpdateLogoutError(reason="NOT_FOUND", message="USER_NOT_FOUND")
 
     if not user_db.logged:
-        return Error(reason="BAD_REQUEST", message="USER_NOT_LOGGED")
+        return UpdateLogoutError(reason="BAD_REQUEST", message="USER_NOT_LOGGED")
 
     if user_db.id == id:
         with session_maker() as session:
@@ -104,10 +130,12 @@ def update_logout(id: int, session_maker: sessionmaker) -> Error | AlterStatusLo
 
         return AlterStatusLogin(email=user_db.email, status="LOGOUT_SUCCESSFUL")
 
-    return Error(reason="NOT_FOUND", message="USER_NOT_FOUND")
+    return UpdateLogoutError(reason="NOT_FOUND", message="USER_NOT_FOUND")
 
 
-def return_user_logged(id: int, session_maker: sessionmaker) -> Logged | Error:
+def return_user_logged(
+    id: int, session_maker: sessionmaker
+) -> Logged | UserLoggedError:
     with session_maker() as session:
         user_db = (
             session.query(User.id, User.email, User.logged)
@@ -116,7 +144,7 @@ def return_user_logged(id: int, session_maker: sessionmaker) -> Logged | Error:
         )
 
     if user_db is None:
-        return Error(reason="BAD_REQUEST", message="USER_NOT_FOUND")
+        return UserLoggedError(reason="BAD_REQUEST", message="USER_NOT_FOUND")
 
     if user_db.logged:
         return Logged(id=user_db.id, email=user_db.email, status="USER_LOGGED")
@@ -124,7 +152,7 @@ def return_user_logged(id: int, session_maker: sessionmaker) -> Logged | Error:
     if not user_db.logged:
         return Logged(id=user_db.id, email=user_db.email, status="USER_NOT_LOGGED")
 
-    return Error(reason="UNKNOWN", message="USER_NOT_FOUND")
+    return UserLoggedError(reason="NOT_FOUND", message="USER_NOT_FOUND")
 
 
 def verify_email_already_exists(email_user: str, session_maker: sessionmaker) -> bool:
