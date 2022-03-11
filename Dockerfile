@@ -8,4 +8,4 @@ COPY pyproject.toml /API_LOGIN/
 RUN pip install poetry
 RUN poetry install
 COPY app /API_LOGIN/app
-CMD ["poetry", "run", "uvicorn", "app.main:app"]
+CMD ["poetry", "run", "uvicorn", "--host", "0.0.0.0", "app.main:app"]
