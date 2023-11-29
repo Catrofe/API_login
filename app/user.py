@@ -121,10 +121,7 @@ def return_user_logged(id: int, session_maker: sessionmaker) -> Logged | Error:
     if user_db.logged:
         return Logged(id=user_db.id, email=user_db.email, status="USER_LOGGED")
 
-    if not user_db.logged:
-        return Logged(id=user_db.id, email=user_db.email, status="USER_NOT_LOGGED")
-
-    return Error(reason="UNKNOWN", message="USER_NOT_FOUND")
+    return Logged(id=user_db.id, email=user_db.email, status="USER_NOT_LOGGED")
 
 
 def verify_email_already_exists(email_user: str, session_maker: sessionmaker) -> bool:
